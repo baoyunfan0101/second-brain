@@ -1,0 +1,1 @@
+<span class="abbr" data-title="$FULL$">$SHORT$</span>

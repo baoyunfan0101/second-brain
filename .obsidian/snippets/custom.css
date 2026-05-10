@@ -1,0 +1,56 @@
+/* inline code - preview */
+.markdown-preview-view code {
+  background-color: rgba(120, 120, 120, 0.15);
+  color: #000000;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+/* inline code - live preview */
+.cm-inline-code {
+  background-color: rgba(120, 120, 120, 0.15);
+  color: #000000 !important;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* block math */
+.markdown-preview-view mjx-container[display="true"] {
+  display: block;
+  font-size: 1.35em;
+  background-color: rgba(120, 120, 120, 0.12);
+  border: 1px solid rgba(180, 180, 180, 0.4);
+  padding: 16px 18px;
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+/* inline math */
+.markdown-preview-view mjx-container {
+  font-size: 1.1em;
+}
+
+/* abbreviation */
+.abbr {
+  position: relative;
+  color: #c0392b !important;
+  font-weight: 600;
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+.abbr:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  left: 0;
+  top: 125%;
+  white-space: nowrap;
+  background-color: #2b2b2b;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
