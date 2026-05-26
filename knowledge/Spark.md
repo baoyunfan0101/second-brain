@@ -108,6 +108,8 @@ val ds2 = ds.filter(_.id > 1).map(_.value)
 val result = ds2.collect()
 ```
 
+Know about [[Spark SQL|Spark SQL]].
+
 ## Execution Model
 
 **Workflow**

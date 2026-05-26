@@ -89,6 +89,7 @@ sed '3s/a/b/' file # replace only line 3
 sed 's/^ *//' file # remove leading spaces
 sed 's/ *$//' file # remove trailing spaces
 ```
+
 ## Permissions
 
 ```bash

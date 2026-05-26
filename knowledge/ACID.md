@@ -34,7 +34,7 @@ Typical lifecycle:
 - Failure -> rollback to previous state
 
 **Mechanism**:
-- Undo log (rollback log: records the previous values before modification, used for transaction rollback and <span class="abbr" data-title="ulti-Version Concurrency Control">MVCC</span> support)
+- Undo log (rollback log: records the previous values before modification, used for transaction rollback and <span class="abbr" data-title="Multi-Version Concurrency Control">MVCC</span> support)
 
 ## Consistency
 
