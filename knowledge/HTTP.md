@@ -81,6 +81,9 @@ Content-Length: 27
 - Cookie
 	Stored client state
 	Example: `session_id=abc123`
+- Referer
+	Page URL that initiated the request
+	Example: `https://example.com/page`
 - If-None-Match
 	Conditional request (paired with ETag)
 	Example: `If-None-Match: "abc123"`
@@ -181,6 +184,9 @@ Content-Type: application/json
 - Set-Cookie
 	Client state
 	Example: `session_id=abc123; Path=/; HttpOnly`
+- Referrer-Policy
+	Referer sending policy
+	Example: `strict-origin-when-cross-origin`, `no-referrer`, `origin`
 - Cache-Control
 	Caching rules for the response
 	Example: `max-age=3600`, `no-cache`, `no-store`
