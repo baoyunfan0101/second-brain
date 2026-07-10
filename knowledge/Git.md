@@ -136,7 +136,7 @@ Working Directory -> Staging Area -> Local Repository
 
 ### File States
 
-**File states:**
+**File states in the working directory:**
 
 | State     | Meaning                                        |
 | --------- | ---------------------------------------------- |
@@ -444,6 +444,9 @@ For commits, it shows commit metadata, commit message, and the changes introduce
 **Common commands:**
 
 ```bash
+# Show the current commit
+git show
+
 # Show the current commit
 git show HEAD
 
@@ -840,4 +843,118 @@ git clean -f -e <pattern>
 
 # Remove untracked files under a specific path
 git clean -f -- <path>
+```
+
+## Part 7: Branching and Integration
+
+### git branch
+
+`git branch` manages branches.
+
+**Common parameters:**
+
+| Parameter                                  | Meaning                                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `-a`                                       | Show local and remote-tracking branches                                                                |
+| `-r`                                       | Show remote-tracking branches only                                                                     |
+| `-v`                                       | Show each branch with its latest commit                                                                |
+| `-vv`                                      | Show each branch with its upstream branch and ahead/behind status                                      |
+| `--show-current`                           | Show the current branch name                                                                           |
+| `-d <branch-name>`                         | Delete a merged branch (merged into its upstream branch, or into current `HEAD` if no upstream is set) |
+| `-D <branch-name>`                         | Force delete a branch                                                                                  |
+| `-m [<old-branch-name>] <new-branch-name>` | Rename a specific branch (rename current branch if old name is omitted)                                |
+| `--merged [<commit-id>]`                   | Show branches already merged into a specific commit (`HEAD` is used by default)                        |
+| `--no-merged [<commit-id>]`                | Show branches not yet merged into a specific commit (`HEAD` is used by default)                        |
+
+**Common commands:**
+
+```bash
+# Show local branches
+git branch
+
+# Show local and remote-tracking branches
+git branch -a
+
+# Show remote-tracking branches only
+git branch -r
+
+# Show branches with latest commit
+git branch -v
+
+# Show branches with upstream tracking details
+git branch -vv
+
+# Show the current branch name
+git branch --show-current
+
+# Create a new branch
+git branch <branch-name>
+
+# Delete a merged branch
+git branch -d <branch-name>
+
+# Force delete a branch
+git branch -D <branch-name>
+
+# Rename the current branch
+git branch -m <new-branch-name>
+
+# Rename a specific branch
+git branch -m <old-branch-name> <new-branch-name>
+
+# Show branches already merged into current branch
+git branch --merged
+
+# Show branches not yet merged into current branch
+git branch --no-merged
+```
+
+### git switch
+
+`git switch` switches branches.
+
+It moves `HEAD` and updates the working directory accordingly.
+
+Local changes are preserved if they do not conflict with the target branch; otherwise, Git stops the switch.
+
+**Common parameters:**
+
+| Parameter                       | Meaning                                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `-c <new-branch> [<commit-id>]` | Create a new branch from a specific commit and switch to it (`HEAD` is used by default)                 |
+| `-C <new-branch> [<commit-id>]` | Create or reset a branch from a specific commit and switch to it (`HEAD` is used by default)            |
+| `-`                             | Switch back to the previous branch                                                                      |
+| `--detach [<commit-id>]`        | Switch directly to a specific commit without a branch (`HEAD` is used by default)                       |
+| `--track <remote-branch>`       | Create a local branch tracking a remote one (uses the same name by default; fails if it already exists) |
+| `--discard-changes`             | Discard conflicting local changes when switching                                                        |
+
+**Common commands:**
+
+```bash
+# Switch to an existing branch
+git switch <branch-name>
+
+# Switch to the main branch
+git switch main
+
+# Create a new branch and switch to it
+git switch -c <new-branch>
+
+# Create a new branch from a specific commit and switch to it
+git switch -c <new-branch> <commit-id>
+
+# Create a local branch tracking a remote branch
+git switch --track origin/<branch-name>
+
+# Create a local branch with a specified name tracking a remote branch
+git switch -c <local-branch-name> --track origin/<branch-name>
+
+# Switch back to the previous branch
+git switch -
+
+# Switch directly to a specific commit
+git switch --detach <commit-id>
+
+# Force switch and discard conflicting local changes
+git switch --discard-changes <branch-name>
 ```
