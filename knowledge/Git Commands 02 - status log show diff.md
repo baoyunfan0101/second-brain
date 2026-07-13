@@ -42,7 +42,7 @@ git status -sb
 git status -- README.md
 ```
 
-> [!note] Short Status:
+> [!note] Short status:
 > 
 > **Short status format:**
 > ```text
