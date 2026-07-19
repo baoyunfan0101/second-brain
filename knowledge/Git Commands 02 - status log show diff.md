@@ -149,15 +149,15 @@ For commits, it shows the commit metadata, the commit message, and the changes i
 
 **Common parameters:**
 
-| Parameter | Meaning |
-|---|---|
-| `[<object>]` | Show a specific Git object (`HEAD` by default) |
-| `--stat` | Show changed files with summary statistics |
-| `--name-only` | Show only the names of changed files |
-| `--name-status` | Show changed file names with change status |
-| `--oneline` | Show commit summary in one line |
-| `--no-patch` | Show commit metadata without file diff |
-| `-- <path>` | Show changes related to a specific file or directory |
+| Parameter       | Meaning                                              |
+| --------------- | ---------------------------------------------------- |
+| `[<object>]`    | Show a specific Git object (`HEAD` by default)       |
+| `--stat`        | Show changed files with summary statistics           |
+| `--name-only`   | Show only the names of changed files                 |
+| `--name-status` | Show changed file names with change status           |
+| `--oneline`     | Show commit summary in one line                      |
+| `--no-patch`    | Show commit metadata without file diff               |
+| `-- <path>`     | Show changes related to a specific file or directory |
 
 **Common commands:**
 
@@ -236,4 +236,13 @@ git diff -- README.md
 
 # Show differences for a specific file between two commits
 git diff HEAD~1 HEAD -- README.md
+```
+
+## Summary
+
+```text
+status -> working directory and staging area
+log    -> commit history
+show   -> Git objects (commit, tree, blob, tag)
+diff   -> differences between working directory, staging area, and commits
 ```
