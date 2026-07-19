@@ -10,7 +10,7 @@ use_cases:
 
 # Git Commands 04 - restore reset revert clean
 
-## Recover
+## Undo
 
 ### git restore
 
@@ -195,4 +195,13 @@ git clean -f -e "*.log"
 
 # Remove untracked files under build/
 git clean -f -- build/
+```
+
+## Summary
+
+```text
+restore -> unstaged or staged changes in tracked files
+reset   -> the latest commit or commits
+revert  -> a specific commit
+clean   -> untracked files and directories
 ```
