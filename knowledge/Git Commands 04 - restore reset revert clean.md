@@ -78,7 +78,6 @@ It may update tracked files in the staging area and the working directory, and c
 | Parameter     | Meaning                                                                                     |
 | ------------- | ------------------------------------------------------------------------------------------- |
 | `<commit-id>` | Reset to a specific commit                                                                  |
-| `HEAD~<n>`    | Reset to the commit before `HEAD` by `<n>` steps                                            |
 | `--soft`      | Move branch only; keep the staging area and the working directory unchanged                 |
 | `--mixed`     | Move branch and reset the staging area; keep the working directory unchanged (default mode) |
 | `--hard`      | Move branch and reset both the staging area and the working directory                       |
@@ -90,7 +89,6 @@ It may update tracked files in the staging area and the working directory, and c
 # Reset with default mixed mode
 git reset
 git reset HEAD~1
-git reset a1b2c3d
 
 # Undo the latest commit but keep changes staged
 git reset --soft HEAD~1
@@ -100,9 +98,6 @@ git reset --mixed HEAD~1
 
 # Undo the latest commit and discard tracked changes
 git reset --hard HEAD~1
-
-# Reset to a specific commit and discard tracked changes
-git reset --hard a1b2c3d
 
 # Unstage a specific file or directory
 git reset -- README.md
@@ -130,20 +125,20 @@ If commits after the target commit modified the same content, the revert may cau
 **Common commands:**
 
 ```bash
-# Revert commit a1b2c3d
-git revert a1b2c3d
+# Revert a specific commit
+git revert HEAD~1
 
-# Revert commit a1b2c3d without opening editor
-git revert --no-edit a1b2c3d
+# Revert a specific commit without opening editor
+git revert --no-edit HEAD~1
 
-# Revert commit a1b2c3d and edit the revert commit message
-git revert --edit a1b2c3d
+# Revert a specific commit and edit the revert commit message
+git revert --edit HEAD~1
 
-# Apply inverse changes from a1b2c3d without committing immediately
-git revert --no-commit a1b2c3d
+# Apply inverse changes without committing immediately
+git revert --no-commit HEAD~1
 
-# Revert merge commit c7d8e9f by choosing parent 1 as mainline
-git revert -m 1 c7d8e9f
+# Revert a merge commit by choosing parent 1 as mainline
+git revert -m 1 HEAD~1
 
 # Continue after resolving revert conflicts
 git revert --continue
