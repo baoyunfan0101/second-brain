@@ -77,16 +77,21 @@ It may update tracked files in the staging area and the working directory, and c
 
 | Parameter     | Meaning                                                                                     |
 | ------------- | ------------------------------------------------------------------------------------------- |
+| `<commit-id>` | Reset to a specific commit                                                                  |
+| `HEAD~<n>`    | Reset to the commit before `HEAD` by `<n>` steps                                            |
 | `--soft`      | Move branch only; keep the staging area and the working directory unchanged                 |
 | `--mixed`     | Move branch and reset the staging area; keep the working directory unchanged (default mode) |
 | `--hard`      | Move branch and reset both the staging area and the working directory                       |
-| `<commit-id>` | Reset to a specific commit                                                                  |
-| `HEAD~<n>`    | Reset to the commit before `HEAD` by `<n>` steps                                            |
 | `-- <path>`   | Reset the staging area for a specific file or directory; branch unchanged                   |
 
 **Common commands:**
 
 ```bash
+# Reset with default mixed mode
+git reset
+git reset HEAD~1
+git reset a1b2c3d
+
 # Undo the latest commit but keep changes staged
 git reset --soft HEAD~1
 
@@ -96,13 +101,11 @@ git reset --mixed HEAD~1
 # Undo the latest commit and discard tracked changes
 git reset --hard HEAD~1
 
-# Reset to commit a1b2c3d and discard tracked changes
+# Reset to a specific commit and discard tracked changes
 git reset --hard a1b2c3d
 
-# Unstage a specific file
+# Unstage a specific file or directory
 git reset -- README.md
-
-# Unstage a specific directory
 git reset -- src/
 ```
 
