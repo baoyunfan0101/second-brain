@@ -195,6 +195,36 @@ git clean -f -e "*.log"
 git clean -f -- build/
 ```
 
+> [!note] Interactive mode
+> 
+> Git lists the untracked files that can be removed, including untracked directories when `-d` is used, and asks how they should be cleaned:
+> 
+> ```text
+> *** Commands ***
+>     1: clean                2: filter by pattern    3: select by numbers
+>     4: ask each             5: quit                 6: help
+> What now>
+> ```
+> 
+> **Common choices:**
+> 
+> | Choice | Meaning |
+> |---|---|
+> | `1` / `clean` | Remove all currently listed items and quit interactive mode |
+> | `2` / `filter by pattern` | Exclude items matching specified patterns from removal |
+> | `3` / `select by numbers` | Select specific items or ranges of items to remove |
+> | `4` / `ask each` | Ask for confirmation before removing each item |
+> | `5` / `quit` | Quit interactive mode without removing anything |
+> | `6` / `help` | Show help |
+> 
+> When selecting items by number, multiple numbers and ranges can be entered:
+> 
+> ```text
+> Select items to delete>> 2-4 6,8
+> ```
+> 
+> Use `*` to select all items, use ` ` or `,` to separate item numbers, use `-` to specify a range, and press Enter on an empty input to return to the main menu.
+
 ## Summary
 
 ```text
