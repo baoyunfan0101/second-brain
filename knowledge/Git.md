@@ -9,7 +9,7 @@ use_cases:
 
 # Git
 
-## Part 1: Core Concepts
+## Core Concepts
 
 ### What Is Git?
 
@@ -85,9 +85,9 @@ A branch is a movable pointer to a commit.
 **Example:**
 
 ```text
-main:    A---B---C
-                  \
-feature:           D---E
+A───B───C main
+         \
+          D───E feature
 ```
 
 Here:
@@ -118,7 +118,7 @@ A remote repository is another Git repository stored outside your local machine.
 
 Default remote name: `origin`
 
-## Part 2: Local File Model
+## Local File Model
 
 ### Working Directory, Staging Area, and Local Repository
 
@@ -195,766 +195,463 @@ dist/
 temp?.txt
 ```
 
-## Part 3: Basic Setup
+## Git Behaviors
 
-### git --version
+### Restore File Versions
 
-`git --version` checks the installed Git version.
+Restoring copies file versions from a source (the staging area or a commit) to the staging area, the working directory, or both:
 
-**Common commands:**
-
-```bash
-git --version
+```text
+staging area / current commit / specific commit
+-> working directory / staging area / both
 ```
 
-### git config
+**Restoring Logic:**
 
-`git config` manages Git configuration.
+```python
+if file is tracked:
 
-**Common parameters:**
+    # Restore to Working Directory
+    if target is working directory:
 
-| Parameter       | Meaning                                        |
-| --------------- | ---------------------------------------------- |
-| `--system`      | Use machine-level configuration                |
-| `--global`      | Use current-user configuration                 |
-| `--local`       | Use current-repository configuration           |
-| `--list`        | Show configuration values                      |
-| `--show-origin` | Show where each configuration value comes from |
+        staging area = no changes
+        working directory = source  # discard unstaged changes
 
-**Common commands:**
+    # Restore to Staging Area
+    elif target is staging area:
 
-```bash
-# Set personal identity
-git config --global user.name "<your-name>"
-git config --global user.email "<your-email>"
+        staging area = source  # discard staged changes
+        working directory = no changes
 
-# Read effective configuration
-git config --list
-git config --list --show-origin
-git config user.name
-git config user.email
+    # Restore to Staging Area and Working Directory
+    elif target is staging area and working directory:
 
-# Read configuration from a specific level
-git config --global --list
-git config --global user.name
-git config --global user.email
+        staging area = source  # discard staged changes
+        working directory = source  # discard unstaged changes
 
-# Set common defaults
-git config --global init.defaultBranch <branch-name>
-git config --global core.editor "<editor-command>"  # Example: "code --wait"
+# Untracked File
+elif file is untracked:
+
+    if source has a tracked file at the same path and this path is restored:
+        working directory = source  # overwritten
+
+    else:
+        working directory = keep untracked file  # no changes
+
+# Ignored (Untracked) File
+elif file is ignored (and untracked):
+
+    if source has a tracked file at the same path and this path is restored:
+        working directory = source  # overwritten
+
+    else:
+        working directory = keep ignored file  # no changes
 ```
 
-### git init
-
-`git init` creates a new Git repository in the current directory.
-
-It adds a hidden `.git` directory.
-
-**Common parameters:**
-
-| Parameter                        | Meaning                     |
-| -------------------------------- | --------------------------- |
-| `--initial-branch=<branch-name>` | Set the initial branch name |
-
-**Common commands:**
+**Related Commands:**
 
 ```bash
-# Initialize the current directory as a Git repository
-git init
-
-# Initialize with a specific initial branch name
-git init --initial-branch=<branch-name>
-```
-
-### git clone
-
-`git clone` copies a remote repository to your local machine.
-
-By default, it creates a new directory under the current directory.
-
-**Common commands:**
-
-```bash
-# Clone into a directory named after the remote repository
-git clone <repository-url>
-
-# Clone into a custom local directory
-git clone <repository-url> <directory-name>
-
-# Clone into the current directory
-git clone <repository-url> .
-```
-
-After cloning, the new local repository contains project files, commit history, and a remote named `origin`.
-
-## Part 4: Inspecting Repository State
-
-> [!info] Pager
-> Some Git commands may open output in a pager when the result is long.
-> 
-> Press `q` to quit the pager and return to the terminal.
-
-### git status
-
-`git status` shows the current state of the working directory and staging area.
-
-**Common parameters:**
-
-| Parameter   | Meaning                                      |
-| ----------- | -------------------------------------------- |
-| `-s`        | Show status in short format                  |
-| `--short`   | Same as `-s`                                 |
-| `--branch`  | Show branch information                      |
-| `-- <path>` | Show status for a specific file or directory |
-
-**Common commands:**
-
-```bash
-# Show full repository status
-git status
-
-# Show short status
-git status -s
-
-# Show status with branch information
-git status --branch
-
-# Show status for a specific path
-git status -- <path>
-```
-
-> [!note] Short Status:
-> 
-> **Short status format:**
-> ```text
-> XY <file>
-> ```
-> 
-> | Position | Meaning |
-> |---|---|
-> | `X` | Staged file status: staging area vs. last commit |
-> | `Y` | Unstaged file status: working directory vs. staging area |
-> 
-> **Common status symbols:**
-> 
-> | Symbol | Meaning |
-> |---|---|
-> | space | No change in this position |
-> | `?` | Untracked |
-> | `M` | Modified |
-> | `A` | Added |
-> | `D` | Deleted |
-> | `R` | Renamed |
-> | `U` | Unmerged |
-> 
-> **Example output:**
-> 
-> ```text
-> ?? temp.txt
->  M README.md
-> M  src/App.java
-> MM package.json
-> A  Main.java
-> D  old.txt
-> R  old-name.txt -> new-name.txt
-> UU conflict.txt
-> ```
-> 
-> **Example explanation:**
-> 
-> - `?? temp.txt`: untracked.
-> - ` M README.md`: modified but not staged.
-> - `M  src/App.java`: modified and staged.
-> - `MM package.json`: modified and staged, then modified again.
-> - `A  Main.java`: added and staged.
-> - `D  old.txt`: deleted and staged.
-> - `R  old-name.txt -> new-name.txt`: renamed and staged.
-> - `UU conflict.txt`: unmerged conflict (appears during merge/rebase/cherry-pick/pull).
-
-### git log
-
-`git log` shows commit history.
-
-**Common parameters:**
-
-| Parameter                | Meaning                                                            |
-| ------------------------ | ------------------------------------------------------------------ |
-| `--oneline`              | Show each commit in one line                                       |
-| `--graph`                | Show branch and merge structure                                    |
-| `--all`                  | Show commits from all branches                                     |
-| `-<number>`              | Limit the number of commits shown                                  |
-| `--author="<author>"`    | Show commits by a specific author                                  |
-| `--since="<date>"`       | Show commits after a specific date                                 |
-| `--until="<date>"`       | Show commits before a specific date                                |
-| `--grep="<keyword>"`     | Search commit messages                                             |
-| `-- <path>`              | Show commits related to a specific file or directory               |
-| `<commit-1>..<commit-2>` | Show commits reachable from `<commit-2>` but not from `<commit-1>` |
-
-**Common commands:**
-
-```bash
-# Show full commit history
-git log
-
-# Show full commit history without opening a pager
-git --no-pager log
-
-# Show compact commit history
-git log --oneline
-
-# Show commit history with branch structure
-git log --oneline --graph --all
-
-# Show the latest <number> commits
-git log -<number> --oneline
-
-# Show commits by <author>
-git log --author="<author>"
-
-# Show commits within a time range
-git log --since="<date>" --until="<date>"
-
-# Search commit messages
-git log --grep="<keyword>"
-
-# Show commits that changed <path>
-git log -- <path>
-
-# Show commits in <commit-2> but not in <commit-1>
-git log <commit-1>..<commit-2> --oneline
-```
-
-### git show
-
-`git show` displays details of a Git object.
-
-For commits, it shows commit metadata, commit message, and the changes introduced by that commit.
-
-**Common parameters:**
-
-| Parameter       | Meaning                                              |
-| --------------- | ---------------------------------------------------- |
-| `--stat`        | Show changed files with summary statistics           |
-| `--name-only`   | Show only the names of changed files                 |
-| `--name-status` | Show changed file names with change status           |
-| `--oneline`     | Show commit summary in one line                      |
-| `--no-patch`    | Show commit metadata without file diff               |
-| `-- <path>`     | Show changes related to a specific file or directory |
-
-**Common commands:**
-
-```bash
-# Show the current commit
-git show
-
-# Show the current commit
-git show HEAD
-
-# Show a specific commit
-git show <commit-id>
-
-# Show commit summary and file change statistics
-git show --stat <commit-id>
-
-# Show only changed file names
-git show --name-only <commit-id>
-
-# Show changed file names with status
-git show --name-status <commit-id>
-
-# Show commit metadata without diff
-git show --no-patch <commit-id>
-
-# Show changes to a specific path in a commit
-git show <commit-id> -- <path>
-```
-
-### git diff
-
-`git diff` shows differences between versions.
-
-By default, it shows unstaged changes in the working directory.
-
-**Common parameters:**
-
-| Parameter       | Meaning                                           |
-| --------------- | ------------------------------------------------- |
-| `--staged`      | Show staged changes                               |
-| `--cached`      | Same as `--staged`                                |
-| `--stat`        | Show changed files with summary statistics        |
-| `--name-only`   | Show only the names of changed files              |
-| `--name-status` | Show changed file names with change status        |
-| `--word-diff`   | Show word-level differences                       |
-| `--check`       | Check whitespace errors before committing         |
-| `-- <path>`     | Show differences for a specific file or directory |
-
-**Common commands:**
-
-```bash
-# Show unstaged changes
-git diff
-
-# Show staged changes
-git diff --staged
-
-# Show all uncommitted changes against the latest commit
-git diff HEAD
-
-# Show differences between two commits
-git diff <commit-id-1> <commit-id-2>
-
-# Show differences between two branches
-git diff <branch-1> <branch-2>
-
-# Show file change statistics
-git diff --stat
-
-# Show only changed file names
-git diff --name-only
-
-# Show changed file names with status
-git diff --name-status
-
-# Show word-level differences
-git diff --word-diff
-
-# Check whitespace errors
-git diff --check
-
-# Show differences for a specific path
-git diff -- <path>
-
-# Show differences for a specific path between two commits
-git diff <commit-id-1> <commit-id-2> -- <path>
-```
-
-## Part 5: Staging and Committing
-
-### git add
-
-`git add` moves changes from the working directory to the staging area.
-
-**Common parameters:**
-
-| Parameter          | Meaning                                                                       |
-| ------------------ | ----------------------------------------------------------------------------- |
-| `-A` / `--all`     | Add all changes in the repository, including new, modified, and deleted files |
-| `-u` / `--update`  | Add changes to tracked files only                                             |
-| `-p` / `--patch`   | Select parts of changes interactively                                         |
-| `-n` / `--dry-run` | Show what would be added without actually adding it                           |
-| `-f` / `--force`   | Add ignored files by force                                                    |
-
-**Common commands:**
-
-```bash
-# Add a specific file
-git add <file>
-
-# Add a specific directory
-git add <directory>
-
-# Add changes under the current directory
-git add .
-
-# Add all changes in the repository
-git add -A
-
-# Add changes to tracked files only
-git add -u
-
-# Select parts of changes interactively
-git add -p
-
-# Preview what would be added
-git add -n .
-
-# Add an ignored file by force
-git add -f <file>
-```
-
-> [!note] Patch mode
-> 
-> Git splits changes into hunks and asks whether each hunk should be staged:
-> 
-> ```text
-> (<current>/<total>) Stage this hunk [y,n,q,a,d,j,J,g,/,e,p,?]?
-> ```
-> 
-> **Common choices:**
-> 
-> | Choice | Meaning |
-> |---|---|
-> | `y` | Stage this hunk |
-> | `n` | Do not stage this hunk |
-> | `q` | Quit patch mode |
-> | `a` | Stage this hunk and all remaining hunks in this file |
-> | `d` | Do not stage this hunk or any remaining hunks in this file |
-> | `e` | Manually edit this hunk |
-> | `?` | Show help |
-
-### git commit
-
-`git commit` saves staged changes into local Git history.
-
-A normal commit uses the current `HEAD` commit as its parent.
-
-**Common parameters:**
-
-| Parameter        | Meaning                                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `-m "<message>"` | Use the given commit message                                                                                     |
-| `-a`             | Automatically stage modified and deleted tracked files before committing (skip `git add` for tracked files only) |
-| `--amend`        | Replace the latest commit with a new commit (commit ID changes)                                                  |
-| `--no-edit`      | Reuse the existing commit message                                                                                |
-| `--allow-empty`  | Create a commit without file changes                                                                             |
-
-**Common commands:**
-
-```bash
-# Commit staged changes
-git commit -m "<message>"
-
-# Stage tracked file changes and commit
-git commit -am "<message>"
-
-# Add staged changes to the latest commit
-git commit --amend
-
-# Change the latest commit message
-git commit --amend -m "<message>"
-
-# Amend the latest commit without changing its message
-git commit --amend --no-edit
-
-# Create an empty commit
-git commit --allow-empty -m "<message>"
-```
-
-> [!note] Commit message convention
-> 
-> **Common commit message format:**
-> 
-> ```text
-> <type>(<scope>): <description>
-> ```
-> 
-> **Common types:**
-> 
-> | Type | Meaning |
-> |---|---|
-> | `feat` | New feature |
-> | `fix` | Bug fix |
-> | `docs` | Documentation |
-> | `style` | Formatting only |
-> | `refactor` | Code restructuring without behavior changes |
-> | `test` | Test changes |
-> | `chore` | Maintenance work |
-> 
-> **Examples:**
-> 
-> ```bash
-> git commit -m "feat(auth): add login form"
-> git commit -m "fix(api): handle null response"
-> git commit -m "docs(readme): update setup guide"
-> git commit -m "refactor(user): simplify validation logic"
-> git commit -m "test(order): add payment failure case"
-> ```
-
-## Part 6: Undo and Recovery
-
-### git restore
-
-`git restore` restores files in the working directory or staging area.
-
-It discards changes from the working directory, moves changes from the staging area back to the working directory, or copies files from a specific commit to the working directory.
-
-**Common parameters:**
-
-| Parameter              | Meaning                               |
-| ---------------------- | ------------------------------------- |
-| `--staged`             | Restore the staging area              |
-| `--worktree`           | Restore the working directory         |
-| `--source=<commit-id>` | Restore from a specific commit        |
-| `--patch`              | Select parts of changes interactively |
-| `-- <path>`            | Separate path from command parameters |
-
-**Common commands:**
-
-```bash
-# Discard unstaged changes in a file
 git restore <path>
-
-# Unstage a file but keep the working directory changes
 git restore --staged <path>
-
-# Restore a file from a specific commit
 git restore --source=<commit-id> <path>
-
-# Restore both staging area and working directory from a specific commit
 git restore --source=<commit-id> --staged --worktree <path>
-
-# Interactively choose changes to restore
-git restore --patch <path>
+git checkout [<commit-id>] -- <path>
+git reset <commit-id> -- <path>
 ```
 
-> [!note] Patch mode
-> 
-> Git splits changes into hunks and asks whether each hunk should be discarded from the working directory:
-> 
-> ```text
-> (<current>/<total>) Discard this hunk from worktree [y,n,q,a,d,e,p,?]?
-> ```
-> 
-> **Common choices:**
-> 
-> | Choice | Meaning |
-> |---|---|
-> | `y` | Discard this hunk from the working directory |
-> | `n` | Keep this hunk in the working directory |
-> | `q` | Quit patch mode |
-> | `a` | Discard this hunk and all remaining hunks in this file |
-> | `d` | Keep this hunk and all remaining hunks in this file |
-> | `e` | Manually edit this hunk |
-> | `?` | Show help |
+**Practical Rule:**
 
-### git reset
-
-`git reset` moves the current branch pointer.
-
-It updates the staging area and working directory, and commits after the target commit become unreachable from the current branch.
-
-**Common parameters:**
-
-| Parameter     | Meaning                                                                       |
-| ------------- | ----------------------------------------------------------------------------- |
-| `--soft`      | Move branch only; keep changes in the staging area                            |
-| `--mixed`     | Move branch and reset the staging area; keep changes in the working directory |
-| `--hard`      | Move branch and reset both the staging area and working directory             |
-| `<commit-id>` | Reset to a specific commit                                                    |
-| `HEAD~<n>`    | Reset to the commit before `HEAD` by `<n>` steps                              |
-| `-- <path>`   | Reset changes for a specific file or directory                                |
-
-**Common commands:**
-
-```bash
-# Undo the latest commit but keep changes staged
-git reset --soft HEAD~1
-
-# Undo the latest commit and keep changes unstaged
-git reset --mixed HEAD~1
-
-# Undo the latest commit and discard changes
-git reset --hard HEAD~1
-
-# Reset to a specific commit
-git reset --hard <commit-id>
-
-# Unstage a specific file
-git reset -- <path>
+```text
+Restoring overwrites the target area with the source content.
+Uncommitted changes are lost.
 ```
 
-### git revert
+### Switch Branches with Local Changes
 
-`git revert` creates a new commit that undoes an old commit.
+Branch switching updates the current branch context:
 
-It does not delete the original commit or rewrite commit history; it adds a new commit that applies the inverse changes of the target commit.
+```text
+HEAD:
+current branch -> target branch
 
-If later commits changed or depend on the same content, the revert may cause conflicts or require manual review.
+staging area:
+current commit + staged changes -> target commit + non-conflicting staged changes
 
-**Common parameters:**
-
-| Parameter            | Meaning                                                        |
-| -------------------- | -------------------------------------------------------------- |
-| `--no-edit`          | Use the default revert commit message                          |
-| `--edit`             | Open the editor to modify the revert commit message            |
-| `--no-commit`        | Apply the revert changes without creating a commit immediately |
-| `-m <parent-number>` | Choose the mainline parent when reverting a merge commit       |
-| `--continue`         | Continue after resolving revert conflicts                      |
-| `--abort`            | Abort the revert operation                                     |
-
-**Common commands:**
-
-```bash
-# Revert a specific commit
-git revert <commit-id>
-
-# Revert a commit and use the default commit message
-git revert --no-edit <commit-id>
-
-# Revert a commit and edit the revert commit message
-git revert --edit <commit-id>
-
-# Apply revert changes without committing immediately
-git revert --no-commit <commit-id>
-
-# Revert a merge commit by choosing the mainline parent
-git revert -m <parent-number> <commit-id>
-
-# Continue after resolving revert conflicts
-git revert --continue
-
-# Abort the revert operation
-git revert --abort
+working directory:
+current commit + staged changes + unstaged changes -> target commit + non-conflicting staged changes + non-conflicting unstaged changes
 ```
 
-### git clean
+**Switching Logic:**
 
-`git clean` removes untracked files from the working directory.
+```python
+if file is tracked:
 
-**Common parameters:**
+    # Committed File: The file has no local change.
+    if working directory == staging area == current commit:
 
-| Parameter      | Meaning                                   |
-| -------------- | ----------------------------------------- |
-| `-n`           | Preview files that would be removed       |
-| `-f`           | Force removal of untracked files          |
-| `-d`           | Include untracked directories             |
-| `-i`           | Remove files interactively                |
-| `-x`           | Include ignored files                     |
-| `-X`           | Remove only ignored files                 |
-| `-e <pattern>` | Exclude files matching a specific pattern |
-| `-- <path>`    | Limit cleaning to a specific path         |
+        staging area = target commit
+        working directory = target commit
 
-**Common commands:**
+    # Modified File: The file has unstaged changes.
+    elif working directory != staging area == current commit:
 
-```bash
-# Preview untracked files that would be removed
-git clean -n
+        if target commit == current commit:
+            staging area = target commit  # no changes
+            working directory = keep modified file  # no changes
 
-# Remove untracked files
-git clean -f
+        else:
+            Git stops
 
-# Preview untracked files and directories that would be removed
-git clean -nd
+    # Staged File: The file has staged changes.
+    elif working directory == staging area != current commit:
 
-# Remove untracked files and directories
-git clean -fd
+        if target commit == current commit:
+            staging area = keep staged file  # no changes
+            working directory = keep staged file  # no changes
 
-# Remove untracked files interactively
-git clean -i
+        elif staging area == target commit:
+            staging area = target commit  # no changes
+            working directory = target commit  # no changes
 
-# Remove untracked files, including ignored files
-git clean -fx
+        else:
+            Git stops
 
-# Remove only ignored files
-git clean -fX
+    # Staged and Modified File: The file has both staged and unstaged changes.
+    elif working directory != staging area != current commit:
 
-# Remove untracked files except files matching a pattern
-git clean -f -e <pattern>
+        if target commit == current commit:
+            staging area = keep staged file  # no changes
+            working directory = keep modified file  # no changes
 
-# Remove untracked files under a specific path
-git clean -f -- <path>
+        elif staging area == target commit:
+            staging area = target commit  # no changes
+            working directory = keep modified file  # no changes
+
+        else:
+            Git stops
+
+elif file is untracked:
+
+    if target commit has a tracked file at the same path:
+        Git stops
+
+    else:
+        working directory = keep untracked file  # no changes
+
+elif file is ignored (and untracked):
+
+    if target commit has a tracked file at the same path:
+        working directory = target commit  # overwritten
+
+    else:
+        working directory = keep ignored file  # no changes
 ```
 
-## Part 7: Branching and Integration
-
-### git branch
-
-`git branch` manages branches.
-
-**Common parameters:**
-
-| Parameter                                  | Meaning                                                                                                |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `-a`                                       | Show local and remote-tracking branches                                                                |
-| `-r`                                       | Show remote-tracking branches only                                                                     |
-| `-v`                                       | Show each branch with its latest commit                                                                |
-| `-vv`                                      | Show each branch with its upstream branch and ahead/behind status                                      |
-| `--show-current`                           | Show the current branch name                                                                           |
-| `-d <branch-name>`                         | Delete a merged branch (merged into its upstream branch, or into current `HEAD` if no upstream is set) |
-| `-D <branch-name>`                         | Force delete a branch                                                                                  |
-| `-m [<old-branch-name>] <new-branch-name>` | Rename a specific branch (rename current branch if old name is omitted)                                |
-| `--merged [<commit-id>]`                   | Show branches already merged into a specific commit (`HEAD` is used by default)                        |
-| `--no-merged [<commit-id>]`                | Show branches not yet merged into a specific commit (`HEAD` is used by default)                        |
-
-**Common commands:**
+**Related Commands:**
 
 ```bash
-# Show local branches
-git branch
-
-# Show local and remote-tracking branches
-git branch -a
-
-# Show remote-tracking branches only
-git branch -r
-
-# Show branches with latest commit
-git branch -v
-
-# Show branches with upstream tracking details
-git branch -vv
-
-# Show the current branch name
-git branch --show-current
-
-# Create a new branch
-git branch <branch-name>
-
-# Delete a merged branch
-git branch -d <branch-name>
-
-# Force delete a branch
-git branch -D <branch-name>
-
-# Rename the current branch
-git branch -m <new-branch-name>
-
-# Rename a specific branch
-git branch -m <old-branch-name> <new-branch-name>
-
-# Show branches already merged into current branch
-git branch --merged
-
-# Show branches not yet merged into current branch
-git branch --no-merged
-```
-
-### git switch
-
-`git switch` switches branches.
-
-It moves `HEAD` and updates the working directory accordingly.
-
-Local changes are preserved if they do not conflict with the target branch; otherwise, Git stops the switch.
-
-**Common parameters:**
-
-| Parameter                       | Meaning                                                                                                 |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `-c <new-branch> [<commit-id>]` | Create a new branch from a specific commit and switch to it (`HEAD` is used by default)                 |
-| `-C <new-branch> [<commit-id>]` | Create or reset a branch from a specific commit and switch to it (`HEAD` is used by default)            |
-| `-`                             | Switch back to the previous branch                                                                      |
-| `--detach [<commit-id>]`        | Switch directly to a specific commit without a branch (`HEAD` is used by default)                       |
-| `--track <remote-branch>`       | Create a local branch tracking a remote one (uses the same name by default; fails if it already exists) |
-| `--discard-changes`             | Discard conflicting local changes when switching                                                        |
-
-**Common commands:**
-
-```bash
-# Switch to an existing branch
-git switch <branch-name>
-
-# Switch to the main branch
-git switch main
-
-# Create a new branch and switch to it
-git switch -c <new-branch>
-
-# Create a new branch from a specific commit and switch to it
-git switch -c <new-branch> <commit-id>
-
-# Create a local branch tracking a remote branch
-git switch --track origin/<branch-name>
-
-# Create a local branch with a specified name tracking a remote branch
-git switch -c <local-branch-name> --track origin/<branch-name>
-
-# Switch back to the previous branch
+git switch <branch>
 git switch -
-
-# Switch directly to a specific commit
 git switch --detach <commit-id>
-
-# Force switch and discard conflicting local changes
-git switch --discard-changes <branch-name>
+git checkout <branch>
+git checkout -
+git checkout <commit-id>
 ```
+
+**Practical Rule:**
+
+```python
+if target commit == current commit:
+    switch succeeds
+    local changes are preserved
+
+elif target commit == staging area:
+    switch succeeds
+    staged changes become clean
+    unstaged changes are preserved
+
+else:
+    Git stops
+```
+
+### Merge Branches
+
+Merging combines the changes introduced by the current and target branches (each branch tip compared with their common ancestor) onto the current branch.
+
+This is also known as a three-way merge.
+
+```text
+base commit + current commit + target commit -> merge result
+
+current branch:
+current commit -> new merge commit
+
+target branch:
+unchanged
+
+staging area:
+current commit -> merge result
+
+working directory:
+current commit -> merge result
+```
+
+**Example:**
+
+```bash
+git switch current
+git merge target
+```
+
+Before:
+
+```text
+     current changes
+         (B → D)
+            ↓
+A───B───C───D  current branch
+      \
+       E───F  target branch
+           ↑
+     target changes
+        (B → F)
+```
+
+After:
+
+```text
+         combined changes
+        (B → D) + (B → F)
+                ↓
+A───B───C───D───M  current branch
+     \         /
+      E───────F  target branch
+```
+
+**Merging Logic:**
+
+```python
+if file is tracked:
+
+    # Committed File: The file has no local change.
+    if working directory == staging area == current commit:
+
+        if current commit and target commit can be merged:
+            staging area = merge result
+            working directory = merge result
+
+        else:
+            # same path has 1/2/3 entries: base/current/target versions
+            staging area = unmerged conflict state
+
+            # file contains conflict markers
+            working directory = conflict file
+
+            Git stops
+
+    # Modified File: The file has unstaged changes.
+    elif working directory != staging area == current commit:
+
+        if merge result == current commit:
+            staging area = merge result
+            working directory = keep modified file  # no changes
+
+        else:
+            Git stops
+
+    # Staged File: The file has staged changes.
+    elif working directory == staging area != current commit:
+
+        if merge result == current commit:
+            staging area = keep staged file
+            working directory = keep staged file
+
+        else:
+            Git stops
+
+    # Staged and Modified File: The file has both staged and unstaged changes.
+    elif working directory != staging area != current commit:
+
+        if merge result == current commit:
+            staging area = keep staged file
+            working directory = keep staged file
+
+        else:
+            Git stops
+
+elif file is untracked:
+
+    if merge result has a tracked file at the same path:
+        Git stops
+
+    else:
+        working directory = keep untracked file  # no changes
+
+elif file is ignored (and untracked):
+
+    if merge result has a tracked file at the same path:
+        working directory = merge result  # overwritten
+
+    else:
+        working directory = keep ignored file  # no changes
+```
+
+**Related Commands:**
+
+```bash
+git merge <branch>
+git merge --no-ff <branch>
+git pull --no-rebase
+```
+
+**Practical Rule:**
+
+```text
+clean tracked path:
+    merge current commit and target commit from base commit
+
+local changes:
+    merge only if the merge result does not overwrite them
+
+conflict:
+    staging area = multiple versions in separate index entries
+    working directory = conflict markers in a file
+```
+
+### Cherry-pick / Rebase Commits
+
+Cherry-picking and rebasing replay the changes introduced by selected commits (each commit compared with its direct parent) onto a new base.
+
+Other file-handling and conflict behaviors are the same as those of merging.
+
+**Example 1:**
+
+```bash
+git switch destination
+git cherry-pick E
+```
+
+Before:
+
+```text
+A───B───C  destination / HEAD
+     \
+      D───E  source
+          ↑
+       change E
+       (D → E)
+```
+
+After:
+
+```text
+         change E
+         (D → E)
+            ↓
+A───B───C───E'  destination / HEAD
+     \
+      D───E  source
+```
+
+**Example 2:**
+
+```bash
+git rebase --onto destination D source
+```
+
+Before:
+
+```text
+A───B───C  destination
+     \
+      D───E  source
+          ↑
+       change E
+       (D → E)
+```
+
+After:
+
+```text
+         change E
+         (D → E)
+            ↓
+A───B───C───E'  source / HEAD
+     \  ↑
+      \ destination
+       \
+        D───E  no branch reference
+```
+
+**Related Commands:**
+
+```bash
+git cherry-pick <commit-id>
+git cherry-pick <start-commit-id>^..<end-commit-id>
+git rebase <base-branch-name>
+git rebase -i <commit-id>
+git rebase --onto <new-base> <upstream> [<branch-name>]
+git pull --rebase
+```
+
+## Git Commands
+
+### git
+
+`git` provides global options before a specific command.
+
+**Common parameters:**
+
+| Parameter           | Meaning                                       |
+| ------------------- | --------------------------------------------- |
+| `--version`         | Show Git version                              |
+| `--help`            | Show Git help                                 |
+| `-C <path>`         | Run Git as if started in a specific directory |
+| `-c <name>=<value>` | Set a temporary config value for one command  |
+| `-p`, `--paginate`  | Pipe output through a pager                   |
+| `-P`, `--no-pager`  | Disable pager output                          |
+
+**Common commands:**
+
+```bash
+# Show Git version
+git --version
+
+# Show Git help
+git --help
+
+# Show help for a specific command
+git help log
+
+# Show status as if running inside the parent directory
+git -C .. status
+
+# Use a temporary config value for one command
+git -c color.ui=always status
+
+# Show log without pager
+git -P log --oneline
+```
+
+### Command Notes
+
+- Setup
+    [[Git Commands 01 - config init clone]]
+
+- Inspect
+    [[Git Commands 02 - status log show diff]]
+
+- Stage and Commit
+    [[Git Commands 03 - add commit]]
+
+- Undo
+    [[Git Commands 04 - restore reset revert clean]]
+
+- Branch and Integrate
+    [[Git Commands 05 - branch switch checkout merge rebase cherry-pick]]
+
+- Synchronize Remotes
+    [[Git Commands 06 - remote fetch pull push]]
+
+- Auxiliary Operations
+    [[Git Commands 07 - tag stash rm mv blame reflog shortlog]]
